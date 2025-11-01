@@ -25,20 +25,6 @@ export const updateActivity = asyncDebounce(async (mediaItem?: MediaItem) => {
 	const trackUrl = `https://tidal.com/${mediaItem.tidalItem.contentType}/${mediaItem.id}/u`
 	const trackSourceUrl = `https://tidal.com/browse${sourceUrl}`;
 
-	activity.buttons = [
-		{
-			url: trackUrl,
-			label: "Play Song",
-		}
-	];
-
-	if (sourceEntityType === "playlist" && settings.displayPlaylistButton) {
-		activity.buttons.push({
-			url: trackSourceUrl,
-			label: "Playlist",
-		});
-	}
-
 	const artist = await mediaItem.artist();
 	const artistUrl = `https://tidal.com/artist/${artist?.id}/u`;
 
@@ -48,6 +34,7 @@ export const updateActivity = asyncDebounce(async (mediaItem?: MediaItem) => {
 	// Title
 	activity.details = await mediaItem.title().then(fmtStr);
 	activity.detailsUrl = trackUrl;
+
 	// Artists
 	const artistNames = await MediaItem.artistNames(await mediaItem.artists());
 	activity.state = fmtStr(artistNames.join(", ")) ?? "Unknown Artist";
@@ -71,14 +58,6 @@ export const updateActivity = asyncDebounce(async (mediaItem?: MediaItem) => {
 		activity.smallImageKey = "paused-icon";
 		activity.smallImageText = "Paused";
 		activity.endTimestamp = Date.now();
-	}
-
-	// Album
-	const album = await mediaItem.album();
-	if (album) {
-		activity.largeImageKey = album.coverUrl();
-		activity.largeImageText = await album.title().then(fmtStr);
-		activity.largeImageUrl = `https://tidal.com/album/${album.id}/u`;
 	}
 
 	await setActivity(activity);
